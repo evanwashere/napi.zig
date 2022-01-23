@@ -1,0 +1,3 @@
+*.node
+zig-cache/
+src/wip.zig
