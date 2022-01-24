@@ -49,21 +49,10 @@ fn sleep(time: usize) !void {
   return error.aaa;
 }
 
-const Strings = struct {
-  a: napi.serde.string,
-  b: napi.serde.string,
-  c: napi.serde.string,
-};
+// TODO: 2nd slice causes llvm error
+fn random(slice: []u8) callconv(.Async) u32 {
+  // _ = slice2;
+  std.time.sleep(1 * std.time.ns_per_s);
 
-fn random(s: napi.serde.string) callconv(.Async) !Strings {
-  std.time.sleep(2 * std.time.ns_per_s);
-  const heap_string = try allocator.alloc(u8, 100);
-
-  std.mem.set(u8, heap_string, 'a');
-
-  return Strings {
-    .a = s,
-    .b = try napi.serde.string.new(5, allocator),
-    .c = try napi.serde.string.new(heap_string, allocator),
-  };
+  return @intCast(u32, slice.len);
 }

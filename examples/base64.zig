@@ -33,5 +33,5 @@ fn decode(env: napi.env, string: napi.string) !napi.string {
 
   defer allocator.free(decoded);
   try decoder.decode(decoded, slice);
-  return napi.string.new(env, .latin1, decoded);
+  return napi.string.new(env, .utf8, decoded);
 }
