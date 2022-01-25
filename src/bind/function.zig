@@ -294,8 +294,9 @@ inline fn args(env: napi.env, comptime f: anytype, ri: napi.napi_callback_info, 
                   else => try napi.safe(napi.napi_get_typedarray_info, .{env.raw, raw.raw, &t, &l, @ptrCast([*]?*anyopaque, &slice), null, null}),
 
                   u8 => switch (is) {
+                    // TODO: change else to false (https://github.com/ziglang/zig/issues/8858)
                     true => try napi.safe(napi.napi_get_typedarray_info, .{env.raw, raw.raw, &t, &l, @ptrCast([*]?*anyopaque, &slice), null, null}),
-                    false => { t = napi.napi_uint8_array; try napi.safe(napi.napi_get_buffer_info, .{env.raw, raw.raw, @ptrCast([*]?*anyopaque, &slice), &l}); },
+                    else => { t = napi.napi_uint8_array; try napi.safe(napi.napi_get_buffer_info, .{env.raw, raw.raw, @ptrCast([*]?*anyopaque, &slice), &l}); },
                   },
                 }
 
@@ -319,8 +320,7 @@ inline fn args(env: napi.env, comptime f: anytype, ri: napi.napi_callback_info, 
                 a[offset] = slice[0..(l * tt / wt.s)];
 
                 if (@hasField(@TypeOf(options), "refs")) {
-                  defer refs += 1;
-                  try napi.safe(napi.napi_create_reference, .{env.raw, raw.raw, 1, &options.refs[refs]});
+                  try napi.safe(napi.napi_create_reference, .{env.raw, raw.raw, 1, &options.refs[refs]}); refs += 1;
                 }
               },
             },

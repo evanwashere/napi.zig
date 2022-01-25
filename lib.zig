@@ -49,9 +49,8 @@ fn sleep(time: usize) !void {
   return error.aaa;
 }
 
-// TODO: 2nd slice causes llvm error
-fn random(slice: []u8) callconv(.Async) u32 {
-  // _ = slice2;
+fn random(slice: []u8, slice2: []u8) callconv(.Async) u32 {
+  _ = slice2;
   std.time.sleep(1 * std.time.ns_per_s);
 
   return @intCast(u32, slice.len);
