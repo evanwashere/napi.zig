@@ -409,16 +409,16 @@ pub const Number = struct {
 
       .ComptimeInt => {
         if (value >= std.math.minInt(i32) and value <= std.math.maxInt(i32)) try call(c.napi_create_int32, .{env.inner, @as(i32, value), &raw})
-        else if (value >= std.math.minInt(i54) and value <= std.math.maxInt(i54)) try call(c.napi_create_int64, .{env.inner, @as(i64, value), &raw})
+        else if (value >= std.math.minInt(i52) and value <= std.math.maxInt(i52)) try call(c.napi_create_int64, .{env.inner, @as(i64, value), &raw})
 
-        else @compileError("comptime_int can't be represented as number (i54), use bigint instead");
+        else @compileError("comptime_int can't be represented as number (i52), use bigint instead");
       },
 
       // TODO: checked usize, isize lowering in serde
       .Int => |info| switch (info.bits) {
-        33...53 => try call(c.napi_create_int64, .{env.inner, @as(i64, value), &raw}),
-        54 => try call(c.napi_create_int64, .{env.inner, @as(i64, @as(i54, value)), &raw}),
-        else => @compileError(@typeName(T) ++ " can't be represented as number (i54), use bigint instead"),
+        33...51 => try call(c.napi_create_int64, .{env.inner, @as(i64, value), &raw}),
+        52 => try call(c.napi_create_int64, .{env.inner, @as(i64, @as(i52, value)), &raw}),
+        else => @compileError(@typeName(T) ++ " can't be represented as number (i52), use bigint instead"),
 
         0...32 => switch (info.signedness) {
           .signed => try call(c.napi_create_int32, .{env.inner, @as(i32, value), &raw}),
