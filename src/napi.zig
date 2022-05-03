@@ -1,6 +1,6 @@
 const std = @import("std");
 const allocator = std.heap.c_allocator;
-const napi = @cImport({ @cInclude("node_api.h"); });
+const napi = @import("./napi/headers/c.zig");
 
 pub usingnamespace napi;
 pub const serde = @import("./serde.zig");
@@ -13,26 +13,6 @@ pub const bind = opaque {
 pub const js_type = enum {
   js_null, js_number, js_string, js_symbol, js_object,
   js_bigint, js_boolean, js_external, js_function, js_undefined,
-};
-
-pub const expected = error {
-  expected_name, expected_date, expected_array,
-  expected_number, expected_string, expected_object,
-  expected_bigint, expected_boolean, expected_function,
-  expected_arraybuffer, expected_detachable_arraybuffer,
-};
-
-pub const err = error {
-  closing,
-  cancelled,
-  queue_full,
-  invalid_arg,
-  would_deadlock,
-  generic_failure,
-  pending_exception,
-  escape_called_twice,
-  handle_scope_mismatch,
-  callback_scope_mismatch,
 };
 
 pub fn register(comptime f: fn(env, object) anyerror!void) void {
@@ -53,36 +33,7 @@ pub fn register(comptime f: fn(env, object) anyerror!void) void {
   @export(wrapper.napi_register_module_v1, .{ .linkage = .Strong, .name = "napi_register_module_v1" });
 }
 
-pub fn safe(comptime f: anytype, args: anytype) !void {
-  var status = @call(.{}, f, args);
-
-  if (status != napi.napi_ok) return switch (status) {
-    else => unreachable,
-    napi.napi_closing => err.closing,
-    napi.napi_cancelled => err.cancelled,
-    napi.napi_queue_full => err.queue_full,
-    napi.napi_invalid_arg => err.invalid_arg,
-    napi.napi_would_deadlock => err.would_deadlock,
-    napi.napi_generic_failure => err.generic_failure,
-    napi.napi_pending_exception => err.pending_exception,
-    napi.napi_escape_called_twice => err.escape_called_twice,
-    napi.napi_handle_scope_mismatch => err.handle_scope_mismatch,
-    napi.napi_callback_scope_mismatch => err.callback_scope_mismatch,
-
-    napi.napi_name_expected => expected.expected_name,
-    napi.napi_date_expected => expected.expected_date,
-    napi.napi_array_expected => expected.expected_array,
-    napi.napi_number_expected => expected.expected_number,
-    napi.napi_string_expected => expected.expected_string,
-    napi.napi_object_expected => expected.expected_object,
-    napi.napi_bigint_expected => expected.expected_bigint,
-    napi.napi_boolean_expected => expected.expected_boolean,
-    napi.napi_function_expected => expected.expected_function,
-    napi.napi_arraybuffer_expected => expected.expected_arraybuffer,
-    napi.napi_detachable_arraybuffer_expected => expected.expected_detachable_arraybuffer,
-  };
-}
-
+pub const safe = @import("./napi/c-napi/safe.zig").call;
 
 /// js runtime types ///
 

@@ -2,21 +2,25 @@ const lib = require('./lib.node');
 
 console.log(lib);
 
-const p = lib.zig(new Uint32Array(4), new Uint8Array(5));
-
 (async () => {
-  const i = setInterval(() => console.log('500ms passed'), 500);
+  console.log((await lib.zig)())
+})()
 
-  try {
-    const r = await p;
-    console.log('zig async returned:', r);
-  }
+// const p = lib.zig(new Uint32Array(4), new Uint8Array(5));
 
-  catch (err) {
-    console.log('async threw error:', err);
-  }
+// (async () => {
+//   const i = setInterval(() => console.log('500ms passed'), 500);
 
-  finally {
-    clearInterval(i);
-  }
-})();
+//   try {
+//     const r = await p;
+//     console.log('zig async returned:', r);
+//   }
+
+//   catch (err) {
+//     console.log('async threw error:', err);
+//   }
+
+//   finally {
+//     clearInterval(i);
+//   }
+// })();

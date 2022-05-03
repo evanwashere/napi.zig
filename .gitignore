@@ -1,3 +1,4 @@
 *.node
+.DS_Store
 zig-cache/
 src/wip.zig

@@ -257,7 +257,6 @@ inline fn args(env: napi.env, comptime f: anytype, ri: napi.napi_callback_info, 
               f16, u24, i24, u40, i40, u48, i48, u56, i56, u128, i128, f128 => {
                 const TT = info.child;
                 var is: bool = undefined;
-                var is_nb: (if (TT == u8) bool else void) = undefined;
 
                 const wt = switch (TT) {
                   else => unreachable,
@@ -276,28 +275,22 @@ inline fn args(env: napi.env, comptime f: anytype, ri: napi.napi_callback_info, 
                   u128, i128 => .{ .s = @sizeOf(u128), .e = if (u128 == TT) error.expected_u128_typedarray else error.expected_i128_typedarray },
                 };
 
-                switch (TT) {
-                  else => try napi.safe(napi.napi_is_typedarray, .{env.raw, raw.raw, &is}),
-                  u8 => { try napi.safe(napi.napi_is_typedarray, .{env.raw, raw.raw, &is}); if (!is) try napi.safe(napi.napi_is_buffer, .{env.raw, raw.raw, &is_nb}); },
-                }
+                try napi.safe(napi.napi_is_typedarray, .{env.raw, raw.raw, &is});
 
-                switch (TT) {
-                  else => if (!is) return error.expected_typedarray,
-                  u8 => if (!is and !is_nb) return error.expected_buffer_or_typedarray,
-                }
+                if (!is) {
+                  var is_nb: bool = undefined;
+                  try napi.safe(napi.napi_is_buffer, .{env.raw, raw.raw, &is_nb});
+
+                  if (!is_nb) return error.expected_buffer_or_typedarray;
+              }
 
                 var l: usize = undefined;
                 var slice: [*]TT = undefined;
                 var t: napi.napi_typedarray_type = undefined;
 
-                switch (TT) {
-                  else => try napi.safe(napi.napi_get_typedarray_info, .{env.raw, raw.raw, &t, &l, @ptrCast([*]?*anyopaque, &slice), null, null}),
-
-                  u8 => switch (is) {
-                    // TODO: change else to false (https://github.com/ziglang/zig/issues/8858)
-                    true => try napi.safe(napi.napi_get_typedarray_info, .{env.raw, raw.raw, &t, &l, @ptrCast([*]?*anyopaque, &slice), null, null}),
-                    else => { t = napi.napi_uint8_array; try napi.safe(napi.napi_get_buffer_info, .{env.raw, raw.raw, @ptrCast([*]?*anyopaque, &slice), &l}); },
-                  },
+                switch (is) {
+                  true => try napi.safe(napi.napi_get_typedarray_info, .{env.raw, raw.raw, &t, &l, @ptrCast([*]?*anyopaque, &slice), null, null}),
+                  else => { t = napi.napi_uint8_array; try napi.safe(napi.napi_get_buffer_info, .{env.raw, raw.raw, @ptrCast([*]?*anyopaque, &slice), &l}); },
                 }
 
                 const tt: u8 = switch (t) {

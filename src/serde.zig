@@ -262,34 +262,6 @@ pub usingnamespace struct {
           .Int => switch (T) {
             else => @compileError("unsupported integer type: " ++ @typeName(T)),
 
-            i32 => {
-              var raw: i32 = undefined;
-              try napi.safe(napi.napi_get_value_int32, .{env.raw, v.raw, &raw});
-
-              return raw;
-            },
-
-            u32 => {
-              var raw: u32 = undefined;
-              try napi.safe(napi.napi_get_value_uint32, .{env.raw, v.raw, &raw});
-
-              return raw;
-            },
-
-            i64 => {
-              var raw: i64 = undefined;
-              try napi.safe(napi.napi_get_value_bigint_int64, .{env.raw, v.raw, &raw});
-
-              return raw;
-            },
-
-            u64 => {
-              var raw: u64 = undefined;
-              try napi.safe(napi.napi_get_value_bigint_uint64, .{env.raw, v.raw, &raw});
-
-              return raw;
-            },
-
             i18, i16 => {
               var raw: i32 = undefined;
               try napi.safe(napi.napi_get_value_int32, .{env.raw, v.raw, &raw});
@@ -309,6 +281,20 @@ pub usingnamespace struct {
               try napi.safe(napi.napi_get_value_int64, .{env.raw, v.raw, &raw});
 
               return std.math.cast(T, raw);
+            },
+
+            u32, i32, u64, i64 => {
+              var raw: T = undefined;
+
+              try napi.safe(switch (T) {
+                else => unreachable,
+                i32 => napi.napi_get_value_int32,
+                u32 => napi.napi_get_value_uint32,
+                i64 => napi.napi_get_value_bigint_int64,
+                u64 => napi.napi_get_value_bigint_uint64,
+              }, .{env.raw, v.raw, &raw});
+
+              return raw;
             },
           },
         }

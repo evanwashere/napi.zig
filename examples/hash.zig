@@ -11,6 +11,9 @@ fn init(env: napi.env, exports: napi.object) !void {
   try exports.set(env, "crc32", try napi.bind.function(env, crc32, "crc32", allocator));
   try exports.set(env, "murmur32", try napi.bind.function(env, murmur32, "murmur32", allocator));
   try exports.set(env, "murmur64", try napi.bind.function(env, murmur64, "murmur64", allocator));
+
+  // can pass any zig function directly
+  try exports.set(env, "crc32_sync", try napi.bind.function(env, std.hash.Crc32.hash, "crc32", allocator));
 }
 
 fn crc32(slice: []u8) callconv(.Async) u32 {
